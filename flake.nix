@@ -1,21 +1,49 @@
 {
   inputs = {
-    naersk.url = "github:nix-community/naersk/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, utils, naersk }:
+  outputs = { self, nixpkgs, utils }:
     utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        naersk-lib = pkgs.callPackage naersk { };
+        buildInputs = with pkgs; [ 
+          cargo 
+          rustc 
+          rustfmt 
+          rustPackages.clippy 
+          pkg-config 
+          gcc 
+          openssl 
+          cacert
+          openssl.dev
+        ];
       in
       {
-        defaultPackage = naersk-lib.buildPackage ./.;
         devShell = with pkgs; mkShell {
-          buildInputs = [ cargo rustc rustfmt pre-commit rustPackages.clippy ];
+          buildInputs = buildInputs;
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
+        };
+        packages.default = pkgs.stdenv.mkDerivation {
+          SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+          CARGO_HOME = "${placeholder "out"}/.cargo";
+
+          pname = "banj-cli";
+          version = "0.0.0";
+          src = ./.;
+          # run tests?
+          doCheck=false;
+          inherit buildInputs;
+            # Add these:
+          buildPhase = ''
+            cargo build -r
+          '';
+          installPhase = ''
+            mkdir -p $out/bin
+            mv target/release/banjrs $out/bin/banj
+          '';
         };
       }
     );

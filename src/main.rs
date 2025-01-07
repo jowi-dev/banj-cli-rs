@@ -26,9 +26,12 @@ fn main() {
 
     match &cli.command {
         Commands::Develop { command } => {
-            Command::new("nix develop")
+            Command::new("nix")
+                .arg("develop")
                 .arg("--command")
-                .arg(command);
+                .arg(command)
+                .status()
+                .expect("Failed to execute command");
         }
     }
 }
