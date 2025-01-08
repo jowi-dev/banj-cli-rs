@@ -1,5 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::process::Command;
+use std::env;
 
 
 #[derive(Parser)]
@@ -39,11 +40,35 @@ fn main() {
                 .status()
                 .expect("Failed to execute command");
         }
-        Commands::Rebuild => todo!(),
+        Commands::Rebuild => rebuild(),
         Commands::Sleep => todo!(),
         Commands::Clean => todo!(),
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
         Commands::Project => todo!()
     }
+}
+
+fn rebuild() {
+    let config = env::var("CONFIG_DIR").expect("config dir not set");
+    let flake = env::var("FLAKE").expect("unknown build for configuration");
+    if cfg!(target_os = "macos"){
+        Command::new("darwin-rebuild")
+            .arg("switch")
+            .arg("--flake")
+            .arg(config + "/.#" + &flake)
+            .status()
+            .expect("Failed to execute command");
+    } else if cfg!(target_os = "linux"){
+        Command::new("sudo")
+            .arg("nixos-rebuild")
+            .arg("switch")
+            .arg("--flake")
+            .arg("$CONFIG_DIR/.#$FLAKE")
+            .status()
+            .expect("Failed to execute command");
+    } else{
+        panic!("System not supported")
+    }
+
 }
