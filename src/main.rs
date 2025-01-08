@@ -18,6 +18,12 @@ enum Commands {
         #[arg(short, long, default_value="fish")]
         command: String,
     },
+    Rebuild,
+    Sleep,
+    Clean,
+    Monitor,
+    Display,
+    Project
     // You can add more top-level commands here
 }
 
@@ -33,5 +39,11 @@ fn main() {
                 .status()
                 .expect("Failed to execute command");
         }
+        Commands::Rebuild => todo!(),
+        Commands::Sleep => todo!(),
+        Commands::Clean => todo!(),
+        Commands::Monitor => todo!(),
+        Commands::Display => todo!(),
+        Commands::Project => todo!()
     }
 }
