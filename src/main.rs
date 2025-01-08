@@ -21,7 +21,10 @@ enum Commands {
     },
     Rebuild,
     Sleep,
-    Clean,
+    Clean {
+        #[arg(short, long, default_value_t=false)]
+        all: bool,
+    },
     Monitor,
     Display,
     Project
@@ -42,7 +45,7 @@ fn main() {
         }
         Commands::Rebuild => rebuild(),
         Commands::Sleep => sleep(),
-        Commands::Clean => todo!(),
+        Commands::Clean { all } => clean(*all),
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
         Commands::Project => todo!()
@@ -84,5 +87,32 @@ fn sleep() {
             .arg("hibernate")
             .status()
             .expect("Failed to sleep");
+    }
+}
+
+fn clean(clean_all : bool) {
+    if clean_all {
+        Command::new("sudo")
+            .arg("nix-collect-garbage")
+            .arg("-d")
+            .status()
+            .expect("");
+        Command::new("sudo")
+            .arg("nix-store")
+            .arg("--gc")
+            .status()
+            .expect("");
+        Command::new("sudo")
+            .arg("nix-store")
+            .arg("--optimise")
+            .status()
+            .expect("");
+    }
+    else{
+        Command::new("sudo")
+            .arg("nix-collect-garbage")
+            .arg("-d")
+            .status()
+            .expect("");
     }
 }
