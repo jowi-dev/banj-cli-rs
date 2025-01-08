@@ -64,7 +64,7 @@ fn rebuild() {
             .arg("nixos-rebuild")
             .arg("switch")
             .arg("--flake")
-            .arg("$CONFIG_DIR/.#$FLAKE")
+            .arg(config + "/.#" + &flake)
             .status()
             .expect("Failed to execute command");
     } else{
