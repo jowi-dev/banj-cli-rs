@@ -41,7 +41,7 @@ fn main() {
                 .expect("Failed to execute command");
         }
         Commands::Rebuild => rebuild(),
-        Commands::Sleep => todo!(),
+        Commands::Sleep => sleep(),
         Commands::Clean => todo!(),
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
@@ -70,5 +70,19 @@ fn rebuild() {
     } else{
         panic!("System not supported")
     }
+}
 
+fn sleep() {
+    if cfg!(target_os = "macos") {
+        Command::new("pmset")
+            .arg("sleepnow")
+            .status()
+            .expect("Failed to sleep");
+
+    } else if cfg!(target_os = "linux"){
+        Command::new("systemctl")
+            .arg("hibernate")
+            .status()
+            .expect("Failed to sleep");
+    }
 }
