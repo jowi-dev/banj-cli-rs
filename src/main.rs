@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use strum_macros::Display;
 use std::process::Command;
 use std::env;
 
@@ -13,22 +14,53 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Development commands
+    Clean {
+        #[arg(short, long, default_value_t=false)]
+        all: bool,
+    },
     Develop {
-        /// Command to run
         #[arg(short, long, default_value="fish")]
         command: String,
     },
     Rebuild,
     Sleep,
-    Clean {
-        #[arg(short, long, default_value_t=false)]
-        all: bool,
-    },
     Monitor,
     Display,
-    Project
+    Project {
+        #[command(subcommand)]
+        command: ProjectCommands
+    }
     // You can add more top-level commands here
+}
+
+#[derive(Subcommand)]
+enum ProjectCommands {
+    // Initializes a Project of the given template type in the current directory
+    Init{
+        // Specifies the project type to initialize
+        #[command(subcommand)]
+        template: ProjectTemplates
+    },
+}
+
+#[derive(Subcommand, Eq, PartialEq)]
+enum ProjectTemplates {
+    //Elixir Script is an escript ready project
+    #[strum(serialize="elixir-script")]
+    ElixirScript,
+    #[strum(serialize="odin")]
+    Odin,
+    #[strum(serialize="bash")]
+    Bash,
+    //Elixir Phoenix as the name implies initializes a project with a database, elixir, phoenix
+    //ready to run
+    #[strum(serialize="elixir-phoenix")]
+    ElixirPhoenix,
+    //Rust is currently the community default rust flake
+    Rust,
+    // TODO
+    #[strum(serialize="ocaml")]
+    OCaml
 }
 
 fn main() {
@@ -48,7 +80,7 @@ fn main() {
         Commands::Clean { all } => clean(*all),
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
-        Commands::Project => todo!()
+        Commands::Project {command} => project(&command)
     }
 }
 
@@ -114,5 +146,30 @@ fn clean(clean_all : bool) {
             .arg("-d")
             .status()
             .expect("");
+    }
+}
+
+fn project(command : &ProjectCommands) {
+    match command {
+        ProjectCommands::Init { template } if *template == ProjectTemplates::Rust => {
+            Command::new("nix")
+                .arg("flake")
+                .arg("init")
+                .arg("-t")
+                .arg("templates#rust")
+                .status()
+                .expect("Failed to initialize project");
+
+        },
+        ProjectCommands::Init {template} => {
+            let config = env::var("CONFIG_DIR").expect("config dir not set");
+            Command::new("nix")
+                .arg("flake")
+                .arg("init")
+                .arg("-t")
+                .arg(config + "#" + template)
+                .status()
+                .expect("Failed to initialize project");
+        },
     }
 }
