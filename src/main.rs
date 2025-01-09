@@ -43,7 +43,7 @@ enum ProjectCommands {
     },
 }
 
-#[derive(Subcommand, Eq, PartialEq)]
+#[derive(Subcommand, Eq, PartialEq, Display)]
 enum ProjectTemplates {
     //Elixir Script is an escript ready project
     #[strum(serialize="elixir-script")]
@@ -167,7 +167,7 @@ fn project(command : &ProjectCommands) {
                 .arg("flake")
                 .arg("init")
                 .arg("-t")
-                .arg(config + "#" + template)
+                .arg(config + "#" + &template.to_string())
                 .status()
                 .expect("Failed to initialize project");
         },
