@@ -29,6 +29,11 @@ enum Commands {
     Project {
         #[command(subcommand)]
         command: ProjectCommands
+    },
+    Log {
+        #[command(subcommand)]
+        command: LogCommands
+
     }
     // You can add more top-level commands here
 }
@@ -41,6 +46,18 @@ enum ProjectCommands {
         #[command(subcommand)]
         template: ProjectTemplates
     },
+}
+
+#[derive(Subcommand)]
+enum LogCommands{
+    List,
+    New {
+        input: String
+    },
+    Publish,
+    Edit,
+    Show, 
+    Delete
 }
 
 #[derive(Subcommand, Eq, PartialEq, Display)]
@@ -63,6 +80,7 @@ enum ProjectTemplates {
     OCaml
 }
 
+
 fn main() {
     let cli = Cli::parse();
 
@@ -80,7 +98,8 @@ fn main() {
         Commands::Clean { all } => clean(*all),
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
-        Commands::Project {command} => project(&command)
+        Commands::Project {command} => project(&command),
+        Commands::Log {command} => log(&command)
     }
 }
 
@@ -171,5 +190,31 @@ fn project(command : &ProjectCommands) {
                 .status()
                 .expect("Failed to initialize project");
         },
+    }
+}
+
+fn log(command: &LogCommands) {
+    let log_dir = env::var("LOG_DIR_PERSONAL").expect("BanjOS: Failed to find log directory");
+
+    match command {
+        LogCommands::New { input } => {
+            Command::new("touch")
+                .arg(log_dir + "/" + input)
+                .status()
+                .expect("Failed to create new log file");
+        },
+        LogCommands::List =>{
+            //lsd -1 --group-directories-first -R -I result ~/log-dir
+            Command::new("lsd")
+                .arg(log_dir)
+                .arg("-1")
+                .arg("--group-directories-first")
+                .status()
+                .expect("Failed to list logs");
+        },
+        LogCommands::Edit => todo!(),
+        LogCommands::Show => todo!(),
+        LogCommands::Delete => todo!(),
+        LogCommands::Publish => todo!()
     }
 }
