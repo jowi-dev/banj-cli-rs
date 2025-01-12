@@ -209,6 +209,7 @@ fn log(command: &LogCommands) {
                 .arg(log_dir)
                 .arg("-1")
                 .arg("--group-directories-first")
+                .arg("-R")
                 .status()
                 .expect("Failed to list logs");
         },
