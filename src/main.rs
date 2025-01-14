@@ -1,6 +1,6 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, Command};
 use strum_macros::Display;
-use std::process::Command;
+use std::process::Command as ProcessCommand;
 use std::env;
 
 
@@ -34,9 +34,11 @@ enum Commands {
         #[command(subcommand)]
         command: LogCommands
 
-    }
-    // You can add more top-level commands here
+    },
+    #[command(external_subcommand)]
+    AI(Vec<String>)        // You can add more top-level commands here
 }
+
 
 #[derive(Subcommand)]
 enum ProjectCommands {
@@ -86,7 +88,7 @@ fn main() {
 
     match &cli.command {
         Commands::Develop { command } => {
-            Command::new("nix")
+            ProcessCommand::new("nix")
                 .arg("develop")
                 .arg("--command")
                 .arg(command)
@@ -99,7 +101,8 @@ fn main() {
         Commands::Monitor => todo!(),
         Commands::Display => todo!(),
         Commands::Project {command} => project(&command),
-        Commands::Log {command} => log(&command)
+        Commands::Log {command} => log(&command),
+        Commands::AI(args) => ai(&args)
     }
 }
 
@@ -107,14 +110,14 @@ fn rebuild() {
     let config = env::var("CONFIG_DIR").expect("config dir not set");
     let flake = env::var("FLAKE").expect("unknown build for configuration");
     if cfg!(target_os = "macos"){
-        Command::new("darwin-rebuild")
+        ProcessCommand::new("darwin-rebuild")
             .arg("switch")
             .arg("--flake")
             .arg(config + "/.#" + &flake)
             .status()
             .expect("Failed to execute command");
     } else if cfg!(target_os = "linux"){
-        Command::new("sudo")
+        ProcessCommand::new("sudo")
             .arg("nixos-rebuild")
             .arg("switch")
             .arg("--flake")
@@ -128,13 +131,13 @@ fn rebuild() {
 
 fn sleep() {
     if cfg!(target_os = "macos") {
-        Command::new("pmset")
+        ProcessCommand::new("pmset")
             .arg("sleepnow")
             .status()
             .expect("Failed to sleep");
 
     } else if cfg!(target_os = "linux"){
-        Command::new("systemctl")
+        ProcessCommand::new("systemctl")
             .arg("hibernate")
             .status()
             .expect("Failed to sleep");
@@ -143,24 +146,24 @@ fn sleep() {
 
 fn clean(clean_all : bool) {
     if clean_all {
-        Command::new("sudo")
+        ProcessCommand::new("sudo")
             .arg("nix-collect-garbage")
             .arg("-d")
             .status()
             .expect("");
-        Command::new("sudo")
+        ProcessCommand::new("sudo")
             .arg("nix-store")
             .arg("--gc")
             .status()
             .expect("");
-        Command::new("sudo")
+        ProcessCommand::new("sudo")
             .arg("nix-store")
             .arg("--optimise")
             .status()
             .expect("");
     }
     else{
-        Command::new("sudo")
+        ProcessCommand::new("sudo")
             .arg("nix-collect-garbage")
             .arg("-d")
             .status()
@@ -171,7 +174,7 @@ fn clean(clean_all : bool) {
 fn project(command : &ProjectCommands) {
     match command {
         ProjectCommands::Init { template } if *template == ProjectTemplates::Rust => {
-            Command::new("nix")
+            ProcessCommand::new("nix")
                 .arg("flake")
                 .arg("init")
                 .arg("-t")
@@ -182,7 +185,7 @@ fn project(command : &ProjectCommands) {
         },
         ProjectCommands::Init {template} => {
             let config = env::var("CONFIG_DIR").expect("config dir not set");
-            Command::new("nix")
+            ProcessCommand::new("nix")
                 .arg("flake")
                 .arg("init")
                 .arg("-t")
@@ -198,14 +201,14 @@ fn log(command: &LogCommands) {
 
     match command {
         LogCommands::New { input } => {
-            Command::new("touch")
+            ProcessCommand::new("touch")
                 .arg(log_dir + "/" + input)
                 .status()
                 .expect("Failed to create new log file");
         },
         LogCommands::List =>{
             //lsd -1 --group-directories-first -R -I result ~/log-dir
-            Command::new("lsd")
+            ProcessCommand::new("lsd")
                 .arg(log_dir)
                 .arg("-1")
                 .arg("--group-directories-first")
@@ -217,5 +220,19 @@ fn log(command: &LogCommands) {
         LogCommands::Show => todo!(),
         LogCommands::Delete => todo!(),
         LogCommands::Publish => todo!()
+    }
+}
+
+fn ai(args: &Vec<String>) {
+    if args.len() <= 1 {  // Only has "ai" or is empty
+        ProcessCommand::new("fnord")
+            .arg("--help")
+            .status()
+            .expect("failed to be helpful");
+    } else {
+        ProcessCommand::new("fnord")
+            .args(&args[1..])  // Skip the "ai" argument
+            .status()
+            .expect("failed to do ai thing");
     }
 }
