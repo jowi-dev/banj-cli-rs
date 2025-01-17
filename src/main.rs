@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, Command};
+use clap::{Parser, Subcommand};
 use strum_macros::Display;
 use std::process::Command as ProcessCommand;
 use std::env;
@@ -23,6 +23,7 @@ enum Commands {
         command: String,
     },
     Rebuild,
+    UserSwitch,
     Sleep,
     Monitor,
     Display,
@@ -96,6 +97,7 @@ fn main() {
                 .expect("Failed to execute command");
         }
         Commands::Rebuild => rebuild(),
+        Commands::UserSwitch => git_switch_user(),
         Commands::Sleep => sleep(),
         Commands::Clean { all } => clean(*all),
         Commands::Monitor => todo!(),
@@ -127,6 +129,16 @@ fn rebuild() {
     } else{
         panic!("System not supported")
     }
+}
+
+fn git_switch_user() {
+    ProcessCommand::new("gh")
+        .arg("auth")
+        .arg("switch")
+        .status()
+        .expect("Failed to switch user");
+
+    rebuild();
 }
 
 fn sleep() {
