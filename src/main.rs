@@ -118,6 +118,13 @@ fn rebuild() {
             .arg(config + "/.#" + &flake)
             .status()
             .expect("Failed to execute command");
+    } else if config == "HMCONFIG" {
+        ProcessCommand::new("home-manager")
+            .arg("switch")
+            .arg("--flake")
+            .arg(config + "/.#" + &flake)
+            .status()
+            .expect("Failed to execute command");
     } else if cfg!(target_os = "linux"){
         ProcessCommand::new("sudo")
             .arg("nixos-rebuild")
