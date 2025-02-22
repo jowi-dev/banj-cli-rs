@@ -31,7 +31,7 @@
       {
         devShell = with pkgs; mkShell {
           buildInputs = buildInputs;
-          RUST_SRC_PATH = rustPlatform.rustLibSrc;
+          #RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
         packages.default = rustPlatform.buildRustPackage rec {
           pname = "banj-cli";

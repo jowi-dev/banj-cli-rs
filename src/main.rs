@@ -110,6 +110,7 @@ fn main() {
 
 fn rebuild() {
     let config = env::var("CONFIG_DIR").expect("config dir not set");
+    println!("{}", config);
     let flake = env::var("FLAKE").expect("unknown build for configuration");
     if cfg!(target_os = "macos"){
         ProcessCommand::new("darwin-rebuild")
@@ -118,11 +119,11 @@ fn rebuild() {
             .arg(config + "/.#" + &flake)
             .status()
             .expect("Failed to execute command");
-    } else if config == "HMCONFIG" {
+    } else if flake == "HMCONFIG" {
         ProcessCommand::new("home-manager")
             .arg("switch")
             .arg("--flake")
-            .arg(config + "/.#" + &flake)
+            .arg(config + "/.#jowi")
             .status()
             .expect("Failed to execute command");
     } else if cfg!(target_os = "linux"){
