@@ -124,6 +124,7 @@ fn rebuild() {
             .arg("switch")
             .arg("--flake")
             .arg(config + "/.#jowi")
+            .arg("--impure")
             .status()
             .expect("Failed to execute command");
     } else if cfg!(target_os = "linux"){
