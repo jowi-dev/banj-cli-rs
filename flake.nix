@@ -39,6 +39,9 @@
 
           src = ./.;
           cargoLock.lockFile = ./Cargo.lock;
+          cargoDeps = rustPlatform.importCargoLock {
+            lockFile = ./Cargo.lock;
+          };
         };
       }
     );
